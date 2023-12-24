@@ -128,9 +128,9 @@ class Agent(GAME_OBJ):
         self.epsilon = 80 - self.n_games
 
         # TODO: the final_move variable must be formatted such that it reflects the Action enum
-        final_move = [0,0,0]
+        final_move = [0,0,0,0]
         if random.randint(0,200) < self.epsilon:
-            move = randint(0,2)
+            move = randint(0,3)
             final_move[move] = 1
         else:
             state0 = torch.tensor(state, dtype=torch.float)
@@ -152,20 +152,10 @@ class Agent(GAME_OBJ):
         self.trainer.train_step(states, actions, rewards, next_states, dones)
 
     def remember(self, state, action, reward, next_state, done):
-        self.memory.append(state, action, reward, next_state, done)
+        self.memory.append((state, action, reward, next_state, done))
 
-    '''
-    FIXME: fix this method so that it uses the inherited collide method to check for 
-    collisions between game object items. utilize the information in the main game 
-    object to update state variable each agent
-    '''
     def update_state(self,game):
         self.state = []
-        '''
-        TODO: this could section should loop through all game objects 
-        and check for possible collisions straight, left, and right based
-        of the current direction of the agent. 
-        '''
         self.state.append(0) # danger straight
         self.state.append(0) # danger left
         self.state.append(0) # danger right
@@ -177,7 +167,7 @@ class Agent(GAME_OBJ):
 
             # danger straight
             try:
-                straight = GAME_OBJ([bot.front+bot.direction])
+                straight = GAME_OBJ([self.front+self.direction])
                 if self.state[0] == 0:
                     self.state[0] = straight.collision(bot)
             except IndexError as e:
@@ -185,7 +175,7 @@ class Agent(GAME_OBJ):
 
             # danger left
             try:
-                right = GAME_OBJ([bot.front+bot.direction.rotate(-90)])
+                right = GAME_OBJ([self.front+self.direction.rotate(-90)])
                 if self.state[1] == 0:
                     self.state[1] = right.collision(bot)
             except IndexError as e:
@@ -193,26 +183,43 @@ class Agent(GAME_OBJ):
 
             # danger right
             try:
-                left = GAME_OBJ([bot.front+bot.direction.rotate(90)])
+                left = GAME_OBJ([self.front+self.direction.rotate(90)])
                 if self.state[2] == 0:
                     self.state[2] = left.collision(bot)
             except IndexError as e:
                 self.state[2] = 1
 
-        self.state.append(self.direction == Vector2(-1,0)) # direction left
-        self.state.append(self.direction == Vector2(1,0)) # direction right
-        self.state.append(self.direction == Vector2(0,-1)) # direction up
-        self.state.append(self.direction == Vector2(0,1)) # direction down
+        directions = np.array([
+            Vector2(-1, 0),  # left
+            Vector2(1, 0),   # right
+            Vector2(0, -1),  # up
+            Vector2(0, 1)    # down
+        ])
+
+        # Update direction state
+        self.state.extend([self.direction == direction for direction in directions])
 
         end_pt = game.end_pts[int(np.argmax(np.array(game.bots) == self))]
-        '''
-        TODO: we want this to check whether end_pt is straight, left, right,
-        or behind based off the orientation and where the bot is currently
-        '''
-        self.state.append(bot.front.x > end_pt.pos.x) # end point left 
-        self.state.append(bot.front.x < end_pt.pos.x) # end point right
-        self.state.append(bot.front.y > end_pt.pos.y) # end point up
-        self.state.append(bot.front.y < end_pt.pos.y) # end point down
+        if self.direction == directions[0]: #<-- left
+            self.state.append(bot.front.y < end_pt.pos.y) # end point left 
+            self.state.append(bot.front.y > end_pt.pos.y) # end point right
+            self.state.append(bot.front.x > end_pt.pos.x) # end point straight
+            self.state.append(bot.frosint.x < end_pt.pos.x) # end point behind
+        elif self.direction == directions[1]: #--> right
+            self.state.append(bot.front.y > end_pt.pos.y) # end point left 
+            self.state.append(bot.front.y < end_pt.pos.y) # end point right
+            self.state.append(bot.front.x < end_pt.pos.x) # end point straight
+            self.state.append(bot.front.x > end_pt.pos.x) # end point behind
+        elif self.direction == directions[2]: #^ up
+            self.state.append(bot.front.x > end_pt.pos.x) # end point left 
+            self.state.append(bot.front.x < end_pt.pos.x) # end point right
+            self.state.append(bot.front.y > end_pt.pos.y) # end point straight
+            self.state.append(bot.front.y < end_pt.pos.y) # end point behind
+        elif self.direction == directions[3]: #v down
+            self.state.append(bot.front.x < end_pt.pos.x) # end point left 
+            self.state.append(bot.front.x > end_pt.pos.x) # end point right
+            self.state.append(bot.front.y < end_pt.pos.y) # end point straight
+            self.state.append(bot.front.y > end_pt.pos.y) # end point behind
 
 class END_PNT(GAME_OBJ):
     def __init__(self,pos: Vector2) -> None:
@@ -240,10 +247,6 @@ class MAIN_GAME:
         self.update_state()
         # print(f'game vector: {self.game_vector}')
 
-    '''
-    FIXME:  fix this method to udpate the state each bot in the bots attribute
-    and use the new collision method to check for collisions
-    '''
     def update_state(self):
         self.entities = [self.bots,self.end_pts]
         self.collision = np.zeros((self.num_agents,self.num_agents))
@@ -262,7 +265,7 @@ class MAIN_GAME:
     TODO: return calculated rewards, dones, scores
     check for compatibility with the updated action
     '''
-    def step(self,bots_action: list[Action]):
+    def step(self, bots_action: list[Action]):
         boundaries = 0
         for idx, bot in enumerate(self.bots):
             try:

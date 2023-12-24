@@ -73,48 +73,9 @@ class TestMainGame(unittest.TestCase):
         print(f'\ndones array: {self.game.dones}')
         self.assertIn(1,self.game.dones)
 
-    '''
-    TODO: first thing in the morning, write tests for the following:
-    '''
-    def test_update_state_bot_state_danger_straight(self):
-        '''
-        TODO: this test will use the game update_state method
-        to check if the danger straight state is being updated correctly
-        '''
-        print('\ntest_update_state_bot_state_danger_straight\n')
-
-        '''
-        TODO: HEAD TO HEAD
-        '''
-        self.game.bots[0] = Agent(Vector2(5,5),Vector2(5,4))
-        self.game.bots[1] = Agent(Vector2(5,6),Vector2(5,7))
-        self.game.end_pts[0] = END_PNT(Vector2(10,10))
-        self.game.end_pts[1] = END_PNT(Vector2(10,11))
-        GAME_OBJ.display_vectors(self.game.bots)
-        self.game.update_state()
-        self.assertEqual(self.game.bots[0].state,[1,0,0,0,0,0,1,])
-        '''
-        TODO: HEAD TO TAIL
-        '''
-
     
-    def test_update_state_bot_state_danger_left(self):
-        pass
 
-    def test_update_state_bot_state_danger_right(self):
-        pass
 
-    def test_update_state_bot_state_direction_left(self):
-        pass
-
-    def test_update_state_bot_state_direction_right(self):
-        pass
-
-    def test_update_state_bot_state_direction_up(self):
-        pass
-
-    def test_update_state_bot_state_direction_down(self):
-        pass
 
 
 
