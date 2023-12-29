@@ -237,15 +237,17 @@ class END_PNT(GAME_OBJ):
             raise TypeError('unsupported type for equality')
         
 class MAIN_GAME:
+
+    '''
+    TODO: new strategy is to be able to get rid of the update_state method entirely
+    by simply adapting the coding of game object initial placement to not have
+    any overlap 
+    '''
     def __init__(self,num_agents) -> None:
-        self.bots = [Agent(
-            (randaxis == 1) * Vector2(randpos, cell_number - 2) + (randaxis == 2) * Vector2(cell_number - 2, randpos) + (randaxis == 3) * Vector2(randpos, 1) + (randaxis == 4) * Vector2(1, randpos),
-            (randaxis == 1) * Vector2(randpos, cell_number - 1) + (randaxis == 2) * Vector2(cell_number - 1, randpos) + (randaxis == 3) * Vector2(randpos, 0) + (randaxis == 4) * Vector2(0, randpos)
-        ) for _ in range(num_agents) for randpos, randaxis in [(randint(0, cell_number - 1), randint(1, 4))]]
         self.num_agents = num_agents
-        self.end_pts = [END_PNT(Vector2(randint(0,cell_number-1),randint(0,cell_number-1))) for _ in range(num_agents)]
-        self.update_state()
-        # print(f'game vector: {self.game_vector}')
+        self.reset()
+        self.collision = np.zeros((self.num_agents,self.num_agents))
+        self.dones = np.zeros(self.num_agents)
 
     def update_state(self):
         self.entities = [self.bots,self.end_pts]
@@ -264,15 +266,20 @@ class MAIN_GAME:
     '''
     TODO: return calculated rewards, dones, scores
     check for compatibility with the updated action
+
+    this method will first move the agents according to the input action
+    if the bot crashes into a boundary then record a game over for that bot: reward = -10
+    if the bot crashes into another bot then record a game over for both bots: reward = -10
+
+    if the bot reaches the end point then record a game over for that bot: reward = 10
     '''
     def step(self, bots_action: list[Action]):
-        boundaries = 0
         for idx, bot in enumerate(self.bots):
             try:
                 bot.move_agent(bots_action[idx])
             except IndexError as e:
                 bot.move_agent(Action.NO_ACTION)
-                boundaries += 1
+                self.dones[idx] = 1
         if boundaries == len(self.bots):
             print('boundary')
             pygame.time.delay(1000)
@@ -287,15 +294,24 @@ class MAIN_GAME:
             self.end_pts[idx].draw_end_pnt()
 
     '''
-    FIXME: make sure this resets the state correctly
+    FIXME: update this 
     '''
     def reset(self):
+
+        # TODO: we have to amend this list creation such that game entities are not created on top of each other
         self.bots = [Agent(
-            (randaxis == 1) * Vector2(randpos, cell_number - 2) + (randaxis == 2) * Vector2(cell_number - 2, randpos) + (randaxis == 3) * Vector2(randpos, 1) + (randaxis == 4) * Vector2(1, randpos),
-            (randaxis == 1) * Vector2(randpos, cell_number - 1) + (randaxis == 2) * Vector2(cell_number - 1, randpos) + (randaxis == 3) * Vector2(randpos, 0) + (randaxis == 4) * Vector2(0, randpos)
-        ) for _ in range(num_agents) for randpos, randaxis in [(randint(0, cell_number - 1), randint(1, 4))]]
-        self.num_agents = num_agents
-        self.end_pts = [END_PNT(randint(0,cell_number-1),randint(0,cell_number-1)) for _ in range(num_agents)]
+            (randaxis == 1) * Vector2(randpos, cell_number - 2) + 
+            (randaxis == 2) * Vector2(cell_number - 2, randpos) + 
+            (randaxis == 3) * Vector2(randpos, 1) + 
+            (randaxis == 4) * Vector2(1, randpos),
+            (randaxis == 1) * Vector2(randpos, cell_number - 1) + 
+            (randaxis == 2) * Vector2(cell_number - 1, randpos) + 
+            (randaxis == 3) * Vector2(randpos, 0) + 
+            (randaxis == 4) * Vector2(0, randpos)
+        ) for _ in range(self.num_agents) for randpos, randaxis in [(randint(0, cell_number - 1), randint(1, 4))]]
+        self.end_pts = [END_PNT(
+            Vector2(randint(0,cell_number-1),randint(0,cell_number-1))
+        ) for _ in range(self.num_agents)]
         self.update_state()    
 
     def train(self):
@@ -338,8 +354,8 @@ if __name__ == '__main__':
     # will create a square block w = 40 px, h = 40 px
     cell_size = 40
     cell_number = 20
-    num_agents = 2
     screen = pygame.display.set_mode((cell_number * cell_size,cell_number * cell_size))
+    num_agents = 2
     clock = pygame.time.Clock()
 
     SCREEN_UPDATE = pygame.USEREVENT
