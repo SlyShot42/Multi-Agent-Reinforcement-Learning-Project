@@ -23,46 +23,48 @@ class MainGame:
         self.num_agents = num_agents
         self.reset()
         self.collision = np.zeros((self.num_agents, self.num_agents))
-        self.dones = np.zeros(self.num_agents)
         self.positions = [
             (x, y) for x in range(CELL_NUMBER) for y in range(CELL_NUMBER)
         ]
         random.shuffle(self.positions)
         self.bots = []
+        self.extractions = []
         for i in range(self.num_agents):
-            front = Vector2(*self.positions.pop())
-            positions1 = np.array(self.positions)
-            back_array = positions1[
+            front = self.positions.pop()
+            self.extractions.append(front)
+            front = Vector2(*front)
+            temp = np.array(self.positions)
+            back_array = temp[
                 (self.positions == (front.x, front.y - 1))
                 | (self.positions == (front.x, front.y + 1))
                 | (self.positions == (front.x - 1, front.y))
                 | (self.positions == (front.x + 1, front.y))
             ]
-            self.positions.remove(back_array[0])
+            back = self.positions.pop(self.positions.index(back_array[0]))
+            self.extractions.append(back)
             back = Vector2(*back_array[0])
             self.bots.append(Agent(front, back))
         self.end_pts = []
         for i in range(self.num_agents):
-            self.end_pts.append(EndPnt(Vector2(*self.positions.pop())))
+            temp = self.positions.pop()
+            self.extractions.append(temp)
+            self.end_pts.append(EndPnt(Vector2(*temp)))
         for bot in self.bots:
             bot.update_state(self)
 
     def run(self):
         while True:
-            # action = [Action.RIGHT, Action.LEFT]
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 elif event.type == SCREEN_UPDATE:
-                    # TODO: in this elif statement,
-                    # TODO: the action is to be calculated by the agent
-                    actions = ...
-                    # TODO: and then passed into the step method
-                    self.step(actions)
-                    # TODO: check for dones and reset accordingly
-
+                    state = [bot.state for bot in self.bots]
+                    actions = [
+                        bot.get_action(state[i]) for i, bot in enumerate(self.bots)
+                    ]
+                    rewards, dones, scores = self.step(actions)
+                    self.reset(dones)
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
                         print("reset")
@@ -88,21 +90,52 @@ class MainGame:
     """
 
     def step(self, bots_action: list[Action]):
+        rewards = np.zeros(self.num_agents)
+        dones = np.zeros(self.num_agents)
+        scores = np.zeros(self.num_agents)
         for idx, bot in enumerate(self.bots):
             try:
                 bot.move_agent(bots_action[idx])
-                if bot.collision(self.end_pts[i]):
-                    self.dones[idx] = 1
+                collisions = np.zeros(self.num_agents)
+                for other_bot in self.bots:
+                    if bot is not other_bot:
+                        collision[idx] = bot.collision(other_bot)
+                        break
+                if bot.collision(self.end_pts[idx]):
+                    scores[idx] += 1
+                    rewards[idx] = 10
+                    # TODO: replace the old position of the end point with its new position in the positions list
+                elif collisions[idx]:
+                    dones[idx] = 1
+                    rewards[idx] = -10
+                    continue
+                # TODO: replace the old position of the bot with its new position in the positions list
             except IndexError as e:
                 bot.move_agent(Action.NO_ACTION)
-                self.dones[idx] = 1
-        if boundaries == len(self.bots):
-            print("boundary")
-            pygame.time.delay(1000)
-            main_game.__init__(self.num_agents)
-        else:
-            self.update_state()
-        # return rewards, dones, scores
+                dones[idx] = 1
+                rewards[idx] = -10
+        for bot in self.bots:
+            bot.update_state(self)
+        return rewards, dones, scores
+
+    """
+    TODO: this method needs to check for dones and reset the corresponding bot's front and back positions using the
+    popped positions from the positions list after has been randomly shuffled. 
+    """
+
+    def reset(self, dones: list[bool] = None):
+        if dones is None:
+            dones = np.zeros(self.num_agents)
+        for idx, bot in enumerate(self.bots):
+            if dones[idx] == 1:
+                bot.reset(
+                    Vector2(*self.positions.pop()), Vector2(*self.positions.pop())
+                )
+                dones[idx] = 0
+        for idx, end_pt in enumerate(self.end_pts):
+            if dones[idx] == 1:
+                end_pt.pos = Vector2(*self.positions.pop())
+        self.update_state()
 
     def draw_elements(self):
         for idx, bot in enumerate(self.bots):

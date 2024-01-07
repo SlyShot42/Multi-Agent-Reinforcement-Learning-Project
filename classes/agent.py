@@ -83,7 +83,7 @@ class Agent(GameObj):
         self.front = front
         self.back = back
         self.body = [self.front, self.back]
-        super().__init__(self.body)
+        super().set_vector(self.body)
         self.direction = self.front - self.back
 
     def get_action(self, state) -> list[Action]:
