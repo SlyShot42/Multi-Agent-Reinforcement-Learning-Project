@@ -1,4 +1,4 @@
-from classes.main_game import MainGame
+from resources import MainGame
 
 
 if __name__ == "__main__":

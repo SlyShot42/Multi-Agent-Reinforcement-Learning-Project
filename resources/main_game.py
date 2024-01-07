@@ -1,9 +1,8 @@
 import pygame
 import numpy as np
+import sys
 from pygame.math import Vector2
-from itertools import combinations
 from .config import CELL_NUMBER
-from .config import SCREEN
 from .config import CELL_SIZE
 from .agent import Agent
 from .end_pnt import EndPnt
@@ -15,14 +14,12 @@ pygame.init()
 clock = pygame.time.Clock()
 SCREEN = pygame.display.set_mode((CELL_NUMBER * CELL_SIZE, CELL_NUMBER * CELL_SIZE))
 SCREEN_UPDATE = pygame.USEREVENT
-pygame.time.set_timer(self.SCREEN_UPDATE, 150)
+pygame.time.set_timer(SCREEN_UPDATE, 150)
 
 
 class MainGame:
     def __init__(self, num_agents) -> None:
         self.num_agents = num_agents
-        self.reset()
-        self.collision = np.zeros((self.num_agents, self.num_agents))
         self.positions = [
             (x, y) for x in range(CELL_NUMBER) for y in range(CELL_NUMBER)
         ]
@@ -67,8 +64,7 @@ class MainGame:
                     self.reset(dones)
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
-                        print("reset")
-                        main_game.reset(main_game.num_agents)
+                        self.reset(np.ones(self.num_agents))
 
             SCREEN.fill((175, 215, 70))
             self.draw_elements()
@@ -99,7 +95,7 @@ class MainGame:
                 collisions = np.zeros(self.num_agents)
                 for other_bot in self.bots:
                     if bot is not other_bot:
-                        collision[idx] = bot.collision(other_bot)
+                        collisions[idx] = bot.collision(other_bot)
                         break
                 if bot.collision(self.end_pts[idx]):
                     scores[idx] += 1
@@ -110,7 +106,7 @@ class MainGame:
                     rewards[idx] = -10
                     continue
                 # TODO: replace the old position of the bot with its new position in the positions list
-            except IndexError as e:
+            except IndexError:
                 bot.move_agent(Action.NO_ACTION)
                 dones[idx] = 1
                 rewards[idx] = -10
@@ -146,7 +142,7 @@ class MainGame:
         plot_scores = []
         plot_mean_scores = []
         total_score = 0
-        record = np.zeros(num_agents)
+        record = np.zeros(self.num_agents)
         while True:
             # get old state
             states_old = [bot.state for bot in self.bots]

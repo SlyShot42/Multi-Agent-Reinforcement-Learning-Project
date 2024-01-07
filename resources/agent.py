@@ -114,13 +114,13 @@ class Agent(GameObj):
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
 
-    def update_state(self, game):
+    def update_state(self, game: MainGame):
         self.state = []
         self.state.append(0)  # danger straight
         self.state.append(0)  # danger left
         self.state.append(0)  # danger right
         for idx, bot in enumerate(game.bots):
-            if self == bot:
+            if self is bot:
                 continue
             if sum(self.state) == 3:
                 break
