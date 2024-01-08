@@ -79,7 +79,7 @@ class Agent(GameObj):
         else:
             raise TypeError("unsupported type for equality")
 
-    def reset(self, front: Vector2, back: Vector2):
+    def place(self, front: Vector2, back: Vector2):
         self.front = front
         self.back = back
         self.body = [self.front, self.back]

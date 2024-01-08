@@ -25,8 +25,10 @@ class MainGame:
         ]
         random.shuffle(self.positions)
         self.bots = []
+        self.end_pts = []
         self.extractions = []
         for i in range(self.num_agents):
+            # sets the initial positions of the bots
             front = self.positions.pop()
             self.extractions.append(front)
             front = Vector2(*front)
@@ -41,11 +43,11 @@ class MainGame:
             self.extractions.append(back)
             back = Vector2(*back_array[0])
             self.bots.append(Agent(front, back))
-        self.end_pts = []
-        for i in range(self.num_agents):
-            temp = self.positions.pop()
-            self.extractions.append(temp)
-            self.end_pts.append(EndPnt(Vector2(*temp)))
+
+            # sets the initial positions of the end points
+            temp1 = self.positions.pop()
+            self.extractions.append(temp1)
+            self.end_pts.append(EndPnt(Vector2(*temp1)))
         for bot in self.bots:
             bot.update_state(self)
 
@@ -72,7 +74,6 @@ class MainGame:
             clock.tick(60)
 
     """
-    TODO: return calculated rewards, dones, scores
     check for compatibility with the updated action
 
     this method will first move the agents according to the input action
@@ -91,6 +92,8 @@ class MainGame:
         scores = np.zeros(self.num_agents)
         for idx, bot in enumerate(self.bots):
             try:
+                prev_front = bot.front
+                prev_back = bot.back
                 bot.move_agent(bots_action[idx])
                 collisions = np.zeros(self.num_agents)
                 for other_bot in self.bots:
@@ -100,12 +103,38 @@ class MainGame:
                 if bot.collision(self.end_pts[idx]):
                     scores[idx] += 1
                     rewards[idx] = 10
-                    # TODO: replace the old position of the end point with its new position in the positions list
+                    # replaces the current position of the end point with a new random position in the positions list
+                    self.positions.append(
+                        self.extractions[
+                            self.extractions.index(
+                                (self.end_pts[idx].pos.x, self.end_pts[idx].pos.y)
+                            )
+                        ]
+                    )
+                    self.extractions.remove(
+                        (self.end_pts[idx].pos.x, self.end_pts[idx].pos.y)
+                    )
+                    random.shuffle(self.positions)
+                    self.end_pts[idx].place(Vector2(*self.positions.pop()))
                 elif collisions[idx]:
                     dones[idx] = 1
                     rewards[idx] = -10
                     continue
-                # TODO: replace the old position of the bot with its new position in the positions list
+                # replaces the old position of the bot with its new position in the positions list
+                self.positions.append(
+                    self.extractions[
+                        self.extractions.index((prev_front.x, prev_front.y))
+                    ]
+                )
+                self.positions.append(
+                    self.extractions[self.extractions.index((prev_back.x, prev_back.y))]
+                )
+                self.extractions.remove((prev_front.x, prev_front.y))
+                self.extractions.remove((prev_back.x, prev_back.y))
+                self.positions.remove((bot.front.x, bot.front.y))
+                self.positions.remove((bot.back.x, bot.back.y))
+                self.extractions.append((bot.front.x, bot.front.y))
+                self.extractions.append((bot.back.x, bot.back.y))
             except IndexError:
                 bot.move_agent(Action.NO_ACTION)
                 dones[idx] = 1
@@ -114,24 +143,37 @@ class MainGame:
             bot.update_state(self)
         return rewards, dones, scores
 
-    """
-    TODO: this method needs to check for dones and reset the corresponding bot's front and back positions using the
-    popped positions from the positions list after has been randomly shuffled. 
-    """
-
     def reset(self, dones: list[bool] = None):
-        if dones is None:
-            dones = np.zeros(self.num_agents)
         for idx, bot in enumerate(self.bots):
-            if dones[idx] == 1:
-                bot.reset(
-                    Vector2(*self.positions.pop()), Vector2(*self.positions.pop())
+            if dones[idx]:
+                # moves the bot's current position stored in the extraction list back into the positions list
+                self.positions.append(
+                    self.extractions[self.extractions.index((bot.front.x, bot.front.y))]
                 )
-                dones[idx] = 0
-        for idx, end_pt in enumerate(self.end_pts):
-            if dones[idx] == 1:
-                end_pt.pos = Vector2(*self.positions.pop())
-        self.update_state()
+                self.positions.append(
+                    self.extractions[self.extractions.index((bot.back.x, bot.back.y))]
+                )
+                self.extractions.remove((bot.front.x, bot.front.y))
+                self.extractions.remove((bot.back.x, bot.back.y))
+                random.shuffle(self.positions)
+
+                # sets a positions of the bots using the positions list
+                front = self.positions.pop()
+                self.extractions.append(front)
+                front = Vector2(*front)
+                temp = np.array(self.positions)
+                back_array = temp[
+                    (self.positions == (front.x, front.y - 1))
+                    | (self.positions == (front.x, front.y + 1))
+                    | (self.positions == (front.x - 1, front.y))
+                    | (self.positions == (front.x + 1, front.y))
+                ]
+                back = self.positions.pop(self.positions.index(back_array[0]))
+                self.extractions.append(back)
+                back = Vector2(*back_array[0])
+                bot.place(front, back)
+        for bot in self.bots:
+            bot.update_state(self)
 
     def draw_elements(self):
         for idx, bot in enumerate(self.bots):
@@ -142,7 +184,7 @@ class MainGame:
         plot_scores = []
         plot_mean_scores = []
         total_score = 0
-        record = np.zeros(self.num_agents)
+        records = np.zeros(self.num_agents)
         while True:
             # get old state
             states_old = [bot.state for bot in self.bots]
@@ -156,28 +198,50 @@ class MainGame:
             rewards, dones, scores = self.step(final_moves)
             states_new = [bot.state for bot in self.bots]
 
-            # short term memory
             for i, bot in enumerate(self.bots):
+                # short term memory
                 bot.train_short_memory(
                     states_old[i], final_moves[i], rewards[i], states_new[i], dones[i]
                 )
 
-            # remember
-            for i, bot in enumerate(self.bots):
+                # remember
                 bot.remember(
                     states_old[i], final_moves[i], rewards[i], states_new[i], dones[i]
                 )
 
-            # TODO: this needs to check which bots are done and run the corresponding training logic
-            if np.sum(dones) == num_agents:
-                self.reset()
-                for bot in self.bots:
+                if dones[i]:
+                    # moves the bot's current position stored in the extraction list back into the positions list
+                    self.positions.append(
+                        self.extractions[
+                            self.extractions.index((bot.front.x, bot.front.y))
+                        ]
+                    )
+                    self.positions.append(
+                        self.extractions[
+                            self.extractions.index((bot.back.x, bot.back.y))
+                        ]
+                    )
+                    self.extractions.remove((bot.front.x, bot.front.y))
+                    self.extractions.remove((bot.back.x, bot.back.y))
+                    random.shuffle(self.positions)
+
+                    # sets a positions of the bots using the positions list
+                    front = self.positions.pop()
+                    self.extractions.append(front)
+                    front = Vector2(*front)
+                    temp = np.array(self.positions)
+                    back_array = temp[
+                        (self.positions == (front.x, front.y - 1))
+                        | (self.positions == (front.x, front.y + 1))
+                        | (self.positions == (front.x - 1, front.y))
+                        | (self.positions == (front.x + 1, front.y))
+                    ]
+                    back = self.positions.pop(self.positions.index(back_array[0]))
+                    self.extractions.append(back)
+                    back = Vector2(*back_array[0])
+                    bot.place(front, back)
                     bot.n_games += 1
-                for bot in self.bots:
                     bot.train_long_memory()
-
-                for i, score in scores:
-                    if score > record[i]:
-                        record[i] = score
-
-                print(f"Game: {self.bots[0].n_games}, Scores: {scores}")
+                    if scores[i] > records[i]:
+                        records[i] = scores[i]
+                    print(f"bot {i} {bot.n_games}, bot {i} score: {scores[i]}")

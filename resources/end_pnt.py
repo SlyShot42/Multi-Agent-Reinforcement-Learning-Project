@@ -19,6 +19,10 @@ class EndPnt(GameObj):
         )
         pygame.draw.rect(SCREEN, (255, 0, 162), terminal_rect)
 
+    def place(self, pos: Vector2):
+        self.pos = pos
+        super().set_vector([self.pos])
+
     def __eq__(self, other):
         if isinstance(other, EndPnt):
             return self.pos == other.pos
