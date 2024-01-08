@@ -90,7 +90,7 @@ class Agent(GameObj):
         self.epsilon = 80 - self.n_games
         final_move = [0, 0, 0, 0]
         if random.randint(0, 200) < self.epsilon:
-            move = randint(0, 3)
+            move = random.randint(0, 3)
             final_move[move] = 1
         else:
             state0 = torch.tensor(state, dtype=torch.float)
@@ -119,7 +119,7 @@ class Agent(GameObj):
         self.state.append(0)  # danger straight
         self.state.append(0)  # danger left
         self.state.append(0)  # danger right
-        for idx, bot in enumerate(game.bots):
+        for bot in game.bots:
             if self is bot:
                 continue
             if sum(self.state) == 3:
@@ -130,7 +130,7 @@ class Agent(GameObj):
                 straight = GameObj([self.front + self.direction])
                 if self.state[0] == 0:
                     self.state[0] = straight.collision(bot)
-            except IndexError as e:
+            except IndexError:
                 self.state[0] = 1
 
             # danger left
@@ -138,7 +138,7 @@ class Agent(GameObj):
                 right = GameObj([self.front + self.direction.rotate(-90)])
                 if self.state[1] == 0:
                     self.state[1] = right.collision(bot)
-            except IndexError as e:
+            except IndexError:
                 self.state[1] = 1
 
             # danger right
@@ -146,7 +146,7 @@ class Agent(GameObj):
                 left = GameObj([self.front + self.direction.rotate(90)])
                 if self.state[2] == 0:
                     self.state[2] = left.collision(bot)
-            except IndexError as e:
+            except IndexError:
                 self.state[2] = 1
 
         directions = np.array(
@@ -163,22 +163,22 @@ class Agent(GameObj):
 
         end_pt = game.end_pts[int(np.argmax(np.array(game.bots) == self))]
         if self.direction == directions[0]:  # <-- left
-            self.state.append(bot.front.y < end_pt.pos.y)  # end point left
-            self.state.append(bot.front.y > end_pt.pos.y)  # end point right
-            self.state.append(bot.front.x > end_pt.pos.x)  # end point straight
-            self.state.append(bot.frosint.x < end_pt.pos.x)  # end point behind
+            self.state.append(self.front.y < end_pt.pos.y)  # end point left
+            self.state.append(self.front.y > end_pt.pos.y)  # end point right
+            self.state.append(self.front.x > end_pt.pos.x)  # end point straight
+            self.state.append(self.front.x < end_pt.pos.x)  # end point behind
         elif self.direction == directions[1]:  # --> right
-            self.state.append(bot.front.y > end_pt.pos.y)  # end point left
-            self.state.append(bot.front.y < end_pt.pos.y)  # end point right
-            self.state.append(bot.front.x < end_pt.pos.x)  # end point straight
-            self.state.append(bot.front.x > end_pt.pos.x)  # end point behind
+            self.state.append(self.front.y > end_pt.pos.y)  # end point left
+            self.state.append(self.front.y < end_pt.pos.y)  # end point right
+            self.state.append(self.front.x < end_pt.pos.x)  # end point straight
+            self.state.append(self.front.x > end_pt.pos.x)  # end point behind
         elif self.direction == directions[2]:  # ^ up
-            self.state.append(bot.front.x > end_pt.pos.x)  # end point left
-            self.state.append(bot.front.x < end_pt.pos.x)  # end point right
-            self.state.append(bot.front.y > end_pt.pos.y)  # end point straight
-            self.state.append(bot.front.y < end_pt.pos.y)  # end point behind
+            self.state.append(self.front.x > end_pt.pos.x)  # end point left
+            self.state.append(self.front.x < end_pt.pos.x)  # end point right
+            self.state.append(self.front.y > end_pt.pos.y)  # end point straight
+            self.state.append(self.front.y < end_pt.pos.y)  # end point behind
         elif self.direction == directions[3]:  # v down
-            self.state.append(bot.front.x < end_pt.pos.x)  # end point left
-            self.state.append(bot.front.x > end_pt.pos.x)  # end point right
-            self.state.append(bot.front.y < end_pt.pos.y)  # end point straight
-            self.state.append(bot.front.y > end_pt.pos.y)  # end point behind
+            self.state.append(self.front.x < end_pt.pos.x)  # end point left
+            self.state.append(self.front.x > end_pt.pos.x)  # end point right
+            self.state.append(self.front.y < end_pt.pos.y)  # end point straight
+            self.state.append(self.front.y > end_pt.pos.y)  # end point behind
