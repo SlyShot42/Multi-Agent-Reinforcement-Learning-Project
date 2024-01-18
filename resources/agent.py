@@ -112,32 +112,27 @@ class Agent(GameObj):
         self.state.append(0)  # danger left
         self.state.append(0)  # danger right
         for bot in game.bots:
-            if self is bot:
-                continue
             if sum(self.state) == 3:
                 break
 
             # danger straight
             try:
                 straight = GameObj([self.front + self.direction])
-                if self.state[0] == 0:
-                    self.state[0] = straight.collision(bot)
+                self.state[0] = straight.collision(bot)
             except IndexError:
                 self.state[0] = 1
 
             # danger left
             try:
                 right = GameObj([self.front + self.direction.rotate(-90)])
-                if self.state[1] == 0:
-                    self.state[1] = right.collision(bot)
+                self.state[1] = right.collision(bot)
             except IndexError:
                 self.state[1] = 1
 
             # danger right
             try:
                 left = GameObj([self.front + self.direction.rotate(90)])
-                if self.state[2] == 0:
-                    self.state[2] = left.collision(bot)
+                self.state[2] = left.collision(bot)
             except IndexError:
                 self.state[2] = 1
 

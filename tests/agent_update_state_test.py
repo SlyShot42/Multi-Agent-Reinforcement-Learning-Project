@@ -1,4 +1,5 @@
 from resources import MainGame, Agent, EndPnt
+from resources.config import CELL_NUMBER, CELL_SIZE
 from pygame.math import Vector2
 
 
@@ -113,3 +114,38 @@ def test_update_state_right():
     print(f"bot 2 state: {game.bots[1].state}")
     assert game.bots[0].state == [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1]
     assert game.bots[1].state == [0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1]
+
+
+def test_update_state_straight_boundary():
+    game1.bots[0] = Agent(
+        Vector2(CELL_NUMBER - 1, int(CELL_NUMBER / 2)),
+        Vector2(CELL_NUMBER - 2, int(CELL_NUMBER / 2)),
+    )
+    game1.end_pts[0] = EndPnt(Vector2(0, int(CELL_NUMBER / 2)))
+    update_states(game1)
+    print("\ntest_update_state_straight_boundary\n")
+    print(f"bot state: {game1.bots[0].state}")
+    assert game.bots[0].state == [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1]
+
+
+def test_update_state_left_boundary():
+    game1.bots[0] = Agent(
+        Vector2(int(CELL_NUMBER / 2), 0), Vector2(int(CELL_NUMBER / 2) - 1, 0)
+    )
+    game1.end_pts[0] = EndPnt(Vector2(CELL_NUMBER - 1, CELL_NUMBER - 1))
+    update_states(game1)
+    print("\ntest_update_state_left_boundary\n")
+    print(f"bot state: {game1.bots[0].state}")
+    assert game.bots[0].state == [0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0]
+
+
+def test_update_state_right_boundary():
+    game1.bots[0] = Agent(
+        Vector2(int(CELL_NUMBER / 2), CELL_NUMBER - 1),
+        Vector2(int(CELL_NUMBER / 2) - 1, CELL_NUMBER - 1),
+    )
+    game1.end_pts[0] = EndPnt(Vector2(CELL_NUMBER - 1, 0))
+    update_states(game1)
+    print("\ntest_update_state_right_boundary\n")
+    print(f"bot state: {game1.bots[0].state}")
+    assert game.bots[0].state == [0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0]
