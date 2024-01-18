@@ -108,9 +108,9 @@ class Agent(GameObj):
 
     def update_state(self, game: MainGame):
         self.state = []
-        self.state.append(0)  # danger straight
-        self.state.append(0)  # danger left
-        self.state.append(0)  # danger right
+        self.state.append(0)  # danger straight 0
+        self.state.append(0)  # danger left 1
+        self.state.append(0)  # danger right 2
         for bot in game.bots:
             if sum(self.state) == 3:
                 break
@@ -138,10 +138,10 @@ class Agent(GameObj):
 
         directions = np.array(
             [
-                Vector2(-1, 0),  # left
-                Vector2(1, 0),  # right
-                Vector2(0, -1),  # up
-                Vector2(0, 1),  # down
+                Vector2(-1, 0),  # left 3
+                Vector2(1, 0),  # right 4
+                Vector2(0, -1),  # up 5
+                Vector2(0, 1),  # down 6
             ]
         )
 
@@ -150,10 +150,10 @@ class Agent(GameObj):
 
         end_pt = game.end_pts[int(np.argmax(np.array(game.bots) == self))]
         if self.direction == directions[0]:  # <-- left
-            self.state.append(self.front.y < end_pt.pos.y)  # end point left
-            self.state.append(self.front.y > end_pt.pos.y)  # end point right
-            self.state.append(self.front.x > end_pt.pos.x)  # end point straight
-            self.state.append(self.front.x < end_pt.pos.x)  # end point behind
+            self.state.append(self.front.y < end_pt.pos.y)  # end point left 7
+            self.state.append(self.front.y > end_pt.pos.y)  # end point right 8
+            self.state.append(self.front.x > end_pt.pos.x)  # end point straight 9
+            self.state.append(self.front.x < end_pt.pos.x)  # end point behind 10
         elif self.direction == directions[1]:  # --> right
             self.state.append(self.front.y > end_pt.pos.y)  # end point left
             self.state.append(self.front.y < end_pt.pos.y)  # end point right
