@@ -7,8 +7,7 @@ import pygame
 
 class EndPnt(GameObj):
     def __init__(self, pos: Vector2) -> None:
-        self.pos = pos
-        super().__init__([self.pos])
+        self.place(pos)
 
     def draw_end_pnt(self):
         terminal_rect = pygame.Rect(
@@ -21,7 +20,7 @@ class EndPnt(GameObj):
 
     def place(self, pos: Vector2):
         self.pos = pos
-        super().set_vector([self.pos])
+        super().set_vector(self.pos)
 
     def __eq__(self, other):
         if isinstance(other, EndPnt):

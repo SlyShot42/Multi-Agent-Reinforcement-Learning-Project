@@ -26,11 +26,7 @@ class Action(Enum):
 
 class Agent(GameObj):
     def __init__(self, front: Vector2, back: Vector2) -> None:
-        self.front = front
-        self.back = back
-        self.body = [self.front, self.back]
-        super().__init__(self.body)
-        self.direction = self.front - self.back
+        self.place(front, back)
         self.n_games = 0
         self.epsilon = 0
         self.gamma = 0
@@ -51,7 +47,7 @@ class Agent(GameObj):
 
     def one_hot_encoder(self, action: Action):
         vect = np.zeros(len(Action))
-        vect[action.value]
+        vect[action.value] = 1
         return vect
 
     def one_hot_decoder(self, vect: np.array):
@@ -67,11 +63,7 @@ class Agent(GameObj):
             next_loc = self.direction.rotate(-90)
         elif action == Action.RIGHT:
             next_loc = self.direction.rotate(90)
-        self.back = self.direction + self.back
-        self.front += next_loc
-        self.body = [self.front, self.back]
-        super().set_vector(self.body)
-        self.direction = self.front - self.back
+        self.place(self.direction + self.back, next_loc + self.front)
 
     def __eq__(self, other):
         if isinstance(other, Agent):
@@ -80,10 +72,10 @@ class Agent(GameObj):
             raise TypeError("unsupported type for equality")
 
     def place(self, front: Vector2, back: Vector2):
+        super().set_vector(front, back)
         self.front = front
         self.back = back
         self.body = [self.front, self.back]
-        super().set_vector(self.body)
         self.direction = self.front - self.back
 
     def get_action(self, state) -> list[Action]:

@@ -5,7 +5,7 @@ from pygame.math import Vector2
 
 
 class GameObj:
-    def __init__(self, pts: list[Vector2] = []) -> None:
+    def __init__(self, *pts: list[Vector2]) -> None:
         self.set_vector(pts)
 
     def collision(self, other):
@@ -14,13 +14,13 @@ class GameObj:
         else:
             raise TypeError("unsupported type for collision")
 
-    def set_vector(self, pts: list[Vector2] = []):
+    def set_vector(self, *pts: list[Vector2]):
         self.vector = np.zeros((CELL_NUMBER, CELL_NUMBER))
         for pt in pts:
             self.vector[int(pt.y), int(pt.x)] = 1
 
     @staticmethod
-    def display_vectors(objects: []):
+    def display_vectors(*objects):
         disp = np.zeros((CELL_NUMBER, CELL_NUMBER))
         for obj in objects:
             disp += obj.vector
