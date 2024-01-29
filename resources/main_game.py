@@ -107,24 +107,21 @@ class MainGame:
                 prev_back = bot.back
                 bot.move_agent(bots_action[idx])
                 if bot.collision(self.end_pts[idx]):
-                    scores[idx] += 1
+                    bot.score += 1
+                    scores[idx] = bot.score
                     rewards[idx] = 10
                     # replaces the current position of the end point with a new random position in the positions list
-                    self.move_to_positions(
-                        (self.end_pts[idx].pos.x, self.end_pts[idx].pos.y)
-                    )
+                    self.move_to_positions(tuple(self.end_pts[idx].pos))
                     random.shuffle(self.positions)
                     self.end_pts[idx].place(Vector2(*self.positions[-1]))
                     self.move_to_extractions(self.positions[-1])
                 # replaces the old position of the bot with its new position in the positions list
-                self.move_to_positions(
-                    (prev_front.x, prev_front.y), (prev_back.x, prev_back.y)
-                )
-                self.move_to_extractions(
-                    (bot.front.x, bot.front.y), (bot.back.x, bot.back.y)
-                )
+                self.move_to_positions(tuple(prev_front), tuple(prev_back))
+                self.move_to_extractions(tuple(bot.front), tuple(bot.back))
             except IndexError:
                 bot.move_agent(Action.NO_ACTION)
+                bot.score = 0
+                scores[idx] = bot.score
                 dones[idx] = 1
                 rewards[idx] = -10
         tracked_bots = []
@@ -164,19 +161,17 @@ class MainGame:
 
             if dones[idx]:
                 # moves the bot's current position stored in the extraction list back into the positions list
-                self.move_to_positions(
-                    (bot.front.x, bot.front.y), (bot.back.x, bot.back.y)
-                )
+                self.move_to_positions(tuple(bot.front), tuple(bot.back))
                 random.shuffle(self.positions)
 
                 # sets a positions of the bots using the positions list
                 front = self.positions[-1]
                 temp = np.array(self.positions)
                 back_array = temp[
-                    (self.positions == (front.x, front.y - 1))
-                    | (self.positions == (front.x, front.y + 1))
-                    | (self.positions == (front.x - 1, front.y))
-                    | (self.positions == (front.x + 1, front.y))
+                    (self.positions == (front.x, front.y - 1))  # north
+                    | (self.positions == (front.x, front.y + 1))  # south
+                    | (self.positions == (front.x - 1, front.y))  # west
+                    | (self.positions == (front.x + 1, front.y))  # east
                 ]
                 back = back_array[-1]
                 bot.place(front, back)

@@ -27,6 +27,7 @@ class Action(Enum):
 class Agent(GameObj):
     def __init__(self, front: Vector2, back: Vector2) -> None:
         self.place(front, back)
+        self.score = 0
         self.n_games = 0
         self.epsilon = 0
         self.gamma = 0
