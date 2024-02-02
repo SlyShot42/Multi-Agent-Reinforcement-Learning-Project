@@ -2,11 +2,12 @@ import numpy as np
 from termcolor import colored
 from .config import CELL_NUMBER
 from pygame.math import Vector2
+from icecream import ic
 
 
 class GameObj:
-    def __init__(self, *pts: list[Vector2]) -> None:
-        self.set_vector(pts)
+    def __init__(self, *pts) -> None:
+        self.set_vector(*pts)
 
     def collision(self, other):
         if isinstance(other, GameObj):
@@ -14,7 +15,7 @@ class GameObj:
         else:
             raise TypeError("unsupported type for collision")
 
-    def set_vector(self, *pts: list[Vector2]):
+    def set_vector(self, *pts):
         self.vector = np.zeros((CELL_NUMBER, CELL_NUMBER))
         for pt in pts:
             self.vector[int(pt.y), int(pt.x)] = 1

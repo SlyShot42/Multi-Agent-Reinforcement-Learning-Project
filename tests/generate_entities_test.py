@@ -1,10 +1,8 @@
 from itertools import combinations
 from resources import MainGame
 
-game = MainGame(2)
 
-
-def collision_check():
+def collision_check(game):
     for i, j in combinations(range(game.num_agents), 2):
         if game.bots[i].collision(game.bots[j]):
             return True
@@ -24,5 +22,6 @@ def collision_check():
 
 def test_generate_entities():
     for i in range(100):
+        game = MainGame(2)
         game.generate_entities()
-        assert collision_check() == False
+        assert collision_check(game) == False

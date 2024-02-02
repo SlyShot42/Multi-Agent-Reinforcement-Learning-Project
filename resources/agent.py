@@ -6,11 +6,13 @@ import random
 from enum import Enum
 from collections import deque
 from .config import CELL_SIZE
-from .main_game import SCREEN
+from .config import SCREEN
 from .config import MAX_MEMORY
 from .config import BATCH_SIZE
 from .game_obj import GameObj
-from .main_game import MainGame
+from icecream import ic
+
+# from .main_game impor
 
 
 class Action(Enum):
@@ -107,7 +109,7 @@ class Agent(GameObj):
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
 
-    def update_state(self, game: MainGame):
+    def update_state(self, game):
         self.state = []
         self.state.append(0)  # danger straight 0
         self.state.append(0)  # danger left 1
@@ -118,21 +120,21 @@ class Agent(GameObj):
 
             # danger straight
             try:
-                straight = GameObj([self.front + self.direction])
+                straight = GameObj(self.front + self.direction)
                 self.state[0] = straight.collision(bot)
             except IndexError:
                 self.state[0] = 1
 
             # danger left
             try:
-                right = GameObj([self.front + self.direction.rotate(-90)])
+                right = GameObj(self.front + self.direction.rotate(-90))
                 self.state[1] = right.collision(bot)
             except IndexError:
                 self.state[1] = 1
 
             # danger right
             try:
-                left = GameObj([self.front + self.direction.rotate(90)])
+                left = GameObj(self.front + self.direction.rotate(90))
                 self.state[2] = left.collision(bot)
             except IndexError:
                 self.state[2] = 1

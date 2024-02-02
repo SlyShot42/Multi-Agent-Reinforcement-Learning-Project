@@ -1,5 +1,11 @@
-from resources.main_game import MainGame
-from resources.agent import Agent
-from resources.agent import Action
-from resources.end_pnt import EndPnt
-from resources.game_obj import GameObj
+from .main_game import MainGame
+from .agent import Agent
+from .agent import Action
+from .end_pnt import EndPnt
+from .game_obj import GameObj
+from .config import SCREEN_UPDATE
+
+import pygame
+
+pygame.init()
+pygame.time.set_timer(SCREEN_UPDATE, 150)

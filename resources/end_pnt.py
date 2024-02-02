@@ -1,7 +1,7 @@
 from pygame.math import Vector2
 from .game_obj import GameObj
 from .config import CELL_SIZE
-from .main_game import SCREEN
+from .config import SCREEN
 import pygame
 
 
