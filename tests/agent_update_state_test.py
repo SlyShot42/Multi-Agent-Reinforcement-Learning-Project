@@ -1,4 +1,4 @@
-from resources import MainGame, Agent, EndPnt
+from resources import MainGame, Agent, EndPnt, GameObj
 from resources.config import CELL_NUMBER, CELL_SIZE
 from pygame.math import Vector2
 
@@ -7,8 +7,8 @@ game = MainGame(2)
 game1 = MainGame(1)
 
 
-def update_states(obj):
-    for bot in obj.bots:
+def update_states(game):
+    for bot in game.bots:
         bot.update_state(game)
 
 
@@ -26,6 +26,10 @@ def move_all_to_extractions(game):
         )
 
 
+def show_vectors(game):
+    GameObj.display_vectors(*game.bots, *game.end_pts)
+
+
 def test_update_state_down():
     # tests danger straight, danger right, end point left,
     # end point straight, end point behind
@@ -39,6 +43,7 @@ def test_update_state_down():
     print("\ntest_update_state_down\n")
     print(f"bot 1 state: {game.bots[0].state}")
     print(f"bot 2 state: {game.bots[1].state}")
+    # show_vectors(game)
     assert game.bots[0].state == [1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0]
     assert game.bots[1].state == [0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0]
 
@@ -52,6 +57,7 @@ def test_update_state_down():
     update_states(game)
     print(f"bot 1 state: {game.bots[0].state}")
     print(f"bot 2 state: {game.bots[1].state}")
+    # show_vectors(game)
     assert game.bots[0].state == [0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0]
     assert game.bots[1].state == [0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0]
 
@@ -69,6 +75,7 @@ def test_update_state_up():
     print("\ntest_update_state_down\n")
     print(f"bot 1 state: {game.bots[0].state}")
     print(f"bot 2 state: {game.bots[1].state}")
+    # show_vectors(game)
     assert game.bots[0].state == [1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0]
     assert game.bots[1].state == [0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1]
 
@@ -82,6 +89,7 @@ def test_update_state_up():
     update_states(game)
     print(f"bot 1 state: {game.bots[0].state}")
     print(f"bot 2 state: {game.bots[1].state}")
+    # show_vectors(game)
     assert game.bots[0].state == [0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0]
     assert game.bots[1].state == [0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0]
 
@@ -99,6 +107,7 @@ def test_update_state_left():
     print("\ntest_update_state_down\n")
     print(f"bot 1 state: {game.bots[0].state}")
     print(f"bot 2 state: {game.bots[1].state}")
+    # show_vectors(game)
     assert game.bots[0].state == [1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0]
     assert game.bots[1].state == [0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0]
 
@@ -112,6 +121,7 @@ def test_update_state_left():
     update_states(game)
     print(f"bot 1 state: {game.bots[0].state}")
     print(f"bot 2 state: {game.bots[1].state}")
+    # show_vectors(game)
     assert game.bots[0].state == [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1]
     assert game.bots[1].state == [0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1]
 
@@ -129,6 +139,7 @@ def test_update_state_right():
     print("\ntest_update_state_down\n")
     print(f"bot 1 state: {game.bots[0].state}")
     print(f"bot 2 state: {game.bots[1].state}")
+    # show_vectors(game)
     assert game.bots[0].state == [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1]
     assert game.bots[1].state == [0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0]
 
@@ -142,6 +153,7 @@ def test_update_state_right():
     update_states(game)
     print(f"bot 1 state: {game.bots[0].state}")
     print(f"bot 2 state: {game.bots[1].state}")
+    # show_vectors(game)
     assert game.bots[0].state == [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1]
     assert game.bots[1].state == [0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1]
 
@@ -157,6 +169,7 @@ def test_update_state_straight_boundary():
     update_states(game1)
     print("\ntest_update_state_straight_boundary\n")
     print(f"bot state: {game1.bots[0].state}")
+    # show_vectors(game1)
     assert game.bots[0].state == [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1]
 
 
@@ -170,6 +183,7 @@ def test_update_state_left_boundary():
     update_states(game1)
     print("\ntest_update_state_left_boundary\n")
     print(f"bot state: {game1.bots[0].state}")
+    # show_vectors(game1)
     assert game.bots[0].state == [0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0]
 
 
@@ -184,4 +198,5 @@ def test_update_state_right_boundary():
     update_states(game1)
     print("\ntest_update_state_right_boundary\n")
     print(f"bot state: {game1.bots[0].state}")
+    # show_vectors(game1)
     assert game.bots[0].state == [0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0]

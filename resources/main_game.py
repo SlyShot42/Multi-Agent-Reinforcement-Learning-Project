@@ -52,13 +52,16 @@ class MainGame:
             end_pt = self.positions[-1]
             self.end_pts.append(EndPnt(end_pt))
             self.move_to_extractions(end_pt)
+        self.update_states()
+
+    def update_states(self):
         for bot in self.bots:
             bot.update_state(self)
 
     def move_to_positions(self, *points):
         for pt in points:
-            self.positions.remove(pt)
-            self.extractions.append(pt)
+            self.extractions.remove(pt)
+            self.positions.append(pt)
 
     def move_to_extractions(self, *points):
         for pt in points:
