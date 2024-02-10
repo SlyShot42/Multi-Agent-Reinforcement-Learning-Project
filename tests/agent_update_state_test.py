@@ -170,7 +170,7 @@ def test_update_state_straight_boundary():
     print("\ntest_update_state_straight_boundary\n")
     print(f"bot state: {game1.bots[0].state}")
     # show_vectors(game1)
-    assert game.bots[0].state == [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1]
+    assert game1.bots[0].state == [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1]
 
 
 def test_update_state_left_boundary():
@@ -180,11 +180,12 @@ def test_update_state_left_boundary():
     )
     game1.end_pts[0].place(Vector2(CELL_NUMBER - 1, CELL_NUMBER - 1))
     move_all_to_extractions(game1)
+    GameObj.display_vectors(*game1.bots, *game1.end_pts)
     update_states(game1)
     print("\ntest_update_state_left_boundary\n")
     print(f"bot state: {game1.bots[0].state}")
     # show_vectors(game1)
-    assert game.bots[0].state == [0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0]
+    assert game1.bots[0].state == [0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0]
 
 
 def test_update_state_right_boundary():
@@ -199,4 +200,4 @@ def test_update_state_right_boundary():
     print("\ntest_update_state_right_boundary\n")
     print(f"bot state: {game1.bots[0].state}")
     # show_vectors(game1)
-    assert game.bots[0].state == [0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0]
+    assert game1.bots[0].state == [0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0]

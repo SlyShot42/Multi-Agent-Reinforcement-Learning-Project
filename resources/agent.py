@@ -115,8 +115,6 @@ class Agent(GameObj):
         self.state.append(0)  # danger left 1
         self.state.append(0)  # danger right 2
         for bot in game.bots:
-            if bot is self:
-                continue
             if sum(self.state) == 3:
                 break
 
@@ -124,34 +122,31 @@ class Agent(GameObj):
             try:
                 straight = self.front + self.direction
                 straight = GameObj(straight)
-                GameObj.display_vectors(straight, bot)
-                self.state[0] = straight.collision(bot)
-                if self.state[0]:
-                    continue
             except IndexError:
                 self.state[0] = 1
+                continue
 
             # danger left
             try:
                 left = self.front + self.direction.rotate(-90)
                 left = GameObj(left)
-                GameObj.display_vectors(left, bot)
-                self.state[1] = left.collision(bot)
-                if self.state[1]:
-                    continue
             except IndexError:
                 self.state[1] = 1
+                continue
 
             # danger right
             try:
                 right = self.front + self.direction.rotate(90)
                 right = GameObj(right)
-                GameObj.display_vectors(right, bot)
-                self.state[2] = right.collision(bot)
-                if self.state[2]:
-                    continue
             except IndexError:
                 self.state[2] = 1
+                continue
+                
+            if bot is self:
+                continue
+            self.state[0] = straight.collision(bot)
+            self.state[1] = left.collision(bot)
+            self.state[2] = right.collision(bot)
 
         directions = np.array(
             [
@@ -163,26 +158,26 @@ class Agent(GameObj):
         )
 
         # Update direction state
-        self.state.extend([self.direction == direction for direction in directions])
+        self.state.extend([int(self.direction == direction) for direction in directions])
 
         end_pt = game.end_pts[int(np.argmax(np.array(game.bots) == self))]
         if self.direction == directions[0]:  # <-- left
-            self.state.append(self.front.y < end_pt.pos.y)  # end point left 7
-            self.state.append(self.front.y > end_pt.pos.y)  # end point right 8
-            self.state.append(self.front.x > end_pt.pos.x)  # end point straight 9
-            self.state.append(self.front.x < end_pt.pos.x)  # end point behind 10
+            self.state.append(int(self.front.y < end_pt.pos.y))  # end point left 7
+            self.state.append(int(self.front.y > end_pt.pos.y))  # end point right 8
+            self.state.append(int(self.front.x > end_pt.pos.x))  # end point straight 9
+            self.state.append(int(self.front.x < end_pt.pos.x))  # end point behind 10
         elif self.direction == directions[1]:  # --> right
-            self.state.append(self.front.y > end_pt.pos.y)  # end point left
-            self.state.append(self.front.y < end_pt.pos.y)  # end point right
-            self.state.append(self.front.x < end_pt.pos.x)  # end point straight
-            self.state.append(self.front.x > end_pt.pos.x)  # end point behind
+            self.state.append(int(self.front.y > end_pt.pos.y))  # end point left
+            self.state.append(int(self.front.y < end_pt.pos.y))  # end point right
+            self.state.append(int(self.front.x < end_pt.pos.x))  # end point straight
+            self.state.append(int(self.front.x > end_pt.pos.x))  # end point behind
         elif self.direction == directions[2]:  # ^ up
-            self.state.append(self.front.x > end_pt.pos.x)  # end point left
-            self.state.append(self.front.x < end_pt.pos.x)  # end point right
-            self.state.append(self.front.y > end_pt.pos.y)  # end point straight
-            self.state.append(self.front.y < end_pt.pos.y)  # end point behind
+            self.state.append(int(self.front.x > end_pt.pos.x))  # end point left
+            self.state.append(int(self.front.x < end_pt.pos.x))  # end point right
+            self.state.append(int(self.front.y > end_pt.pos.y))  # end point straight
+            self.state.append(int(self.front.y < end_pt.pos.y))  # end point behind
         elif self.direction == directions[3]:  # v down
-            self.state.append(self.front.x < end_pt.pos.x)  # end point left
-            self.state.append(self.front.x > end_pt.pos.x)  # end point right
-            self.state.append(self.front.y < end_pt.pos.y)  # end point straight
-            self.state.append(self.front.y > end_pt.pos.y)  # end point behind
+            self.state.append(int(self.front.x < end_pt.pos.x))  # end point left
+            self.state.append(int(self.front.x > end_pt.pos.x))  # end point right
+            self.state.append(int(self.front.y < end_pt.pos.y))  # end point straight
+            self.state.append(int(self.front.y > end_pt.pos.y))  # end point behind
