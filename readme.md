@@ -1,6 +1,6 @@
 # Multi-Agent Extraction RL Prototype
 
-A lightweight multi-agent grid game built on `pygame`, where each [`resources.agent.Agent`](resources/agent.py) learns to navigate toward its assigned extraction target [`resources.end_pnt.EndPnt`](resources/end_pnt.py) while avoiding collisions. Orchestration, reward logic, and training hooks live in [`resources.main_game.MainGame`](resources/main_game.py), and a simple DQN backbone is provided via [`resources.model.DQN`](resources/model.py).
+A lightweight multi-agent grid game built on `pygame`, where each [`resources.agent.Agent`](resources/agent.py) learns to navigate toward its assigned extraction target [`resources.end_pnt.EndPnt`](resources/end_pnt.py) while avoiding collisions. Orchestration, reward logic, and training hooks live in [`resources.main_game.MainGame`](resources/main_game.py), and a LiquidDQN backbone is provided via [`resources.model.LiquidDQN`](resources/model.py).
 
 ## Core Loop
 
